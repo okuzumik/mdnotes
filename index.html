@@ -747,8 +747,9 @@ function buildBody(f){
     const ta = el("textarea", "src-editor"); ta.value = f.body; ta.spellcheck = false;
     ta.addEventListener("input", () => { autoGrow(ta); handleAutocomplete(ta); markBody(ta); });
     ta.addEventListener("keydown", (e) => {
+      if (acState.open && ["ArrowDown","ArrowUp","Enter","Tab","Escape"].includes(e.key)) { acKey(e); return; }
+      if (e.key === "Tab" && !e.isComposing) { handleTabIndent(e, ta); return; }
       if (e.isComposing || e.keyCode === 229) return;
-      if (acState.open && ["ArrowDown","ArrowUp","Enter","Tab","Escape"].includes(e.key)) acKey(e);
     });
     ta.addEventListener("blur", () => setTimeout(hideAC, 120));
     ta.addEventListener("paste", (e) => handlePaste(e, ta));
@@ -783,6 +784,46 @@ function insertAtCaret(ta, text){
   ta.value = ta.value.slice(0, s) + text + ta.value.slice(e);
   const pos = s + text.length; ta.setSelectionRange(pos, pos);
   autoGrow(ta); markBody(ta); ta.focus();
+}
+function handleTabIndent(e, ta){
+  const UNIT = "  ";
+  e.preventDefault();
+  const val = ta.value;
+  const s = ta.selectionStart, en = ta.selectionEnd;
+  const outdent = e.shiftKey;
+  const hasSel = s !== en;
+  // No selection + Tab: just insert two spaces at the caret.
+  if (!hasSel && !outdent){
+    ta.value = val.slice(0, s) + UNIT + val.slice(s);
+    ta.setSelectionRange(s + UNIT.length, s + UNIT.length);
+    autoGrow(ta); markBody(ta); return;
+  }
+  // Otherwise operate on every line touched by the selection (or the current line).
+  const lineStart = val.lastIndexOf("\n", s - 1) + 1;
+  let lineEnd = val.indexOf("\n", en > s ? en - 1 : en);
+  if (lineEnd === -1) lineEnd = val.length;
+  const before = val.slice(0, lineStart), block = val.slice(lineStart, lineEnd), after = val.slice(lineEnd);
+  let firstDelta = 0, totalDelta = 0;
+  const lines = block.split("\n").map((ln, i) => {
+    if (outdent){
+      let rm = 0;
+      if (ln.startsWith(UNIT)) rm = UNIT.length;
+      else if (ln.startsWith("\t")) rm = 1;
+      else { const m = ln.match(/^ +/); rm = m ? Math.min(UNIT.length, m[0].length) : 0; }
+      if (i === 0) firstDelta = -rm;
+      totalDelta -= rm;
+      return ln.slice(rm);
+    } else {
+      if (i === 0) firstDelta = UNIT.length;
+      totalDelta += UNIT.length;
+      return UNIT + ln;
+    }
+  });
+  ta.value = before + lines.join("\n") + after;
+  const ns = Math.max(lineStart, s + firstDelta);
+  const ne = Math.max(ns, en + totalDelta);
+  ta.setSelectionRange(ns, ne);
+  autoGrow(ta); markBody(ta);
 }
 async function handlePaste(e, ta){
   const items = e.clipboardData && e.clipboardData.items;

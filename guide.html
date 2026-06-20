@@ -25,6 +25,11 @@
   .bar .spacer { flex: 1; }
   .openapp { display: inline-flex; align-items: center; gap: 7px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; font-size: 13.5px; padding: 8px 15px; border-radius: 9px; box-shadow: var(--shadow); }
   .openapp:hover { background: #27604f; }
+  .download { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 13.5px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+  .download:hover { border-color: var(--accent); }
+  .hero .cta.ghost { background: var(--panel); color: var(--accent); border: 1px solid var(--line); box-shadow: none; margin-left: 10px; }
+  .hero .cta.ghost:hover { background: var(--line-soft); border-color: var(--accent); }
+  .dl-note { margin-top: 12px; font-size: 12.5px; color: var(--ink-faint); }
 
   /* layout */
   main { max-width: 760px; margin: 0 auto; padding: 0 22px 120px; }
@@ -100,6 +105,7 @@
   <div class="bar">
     <div class="wordmark"><span class="dot"></span>mdNotes</div>
     <div class="spacer"></div>
+    <a class="download" href="index.html" download="mdNotes.html">↓ ダウンロード</a>
     <a class="openapp" href="index.html">アプリを開く →</a>
   </div>
 
@@ -108,6 +114,8 @@
       <h1>手元の Markdown を、<br>その場で読んで<span class="n">書く</span>。</h1>
       <p class="lead">mdNotes は、ローカルフォルダの <code>.md</code> ファイルをブラウザだけで扱う単一HTMLアプリです。インストール不要・ファイル1つ。書いたものはあなたの端末から外に出ません。</p>
       <a class="cta" href="index.html">アプリを開く →</a>
+      <a class="cta ghost" href="index.html" download="mdNotes.html">↓ HTMLをダウンロード</a>
+      <div class="dl-note">ダウンロードした <code>mdNotes.html</code> は、ダブルクリックでも開けます（Mac の Chrome / Edge / Arc）。手元に置いておけばオフラインでも使えます。</div>
       <div class="env">対応ブラウザ：Mac の <code>Chrome</code> / <code>Edge</code> / <code>Arc</code>（Safari・Firefox は非対応）</div>
     </header>
 

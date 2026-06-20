@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mdNotes — 使い方と更新履歴</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --panel: #ffffff; --ink: #2b2a26; --ink-soft: #6b6862; --ink-faint: #9a978f;
+    --line: #e8e5dd; --line-soft: #f0ede5; --link: #2f6f5e; --link-bg: #e8f1ed; --link-empty: #b0673e;
+    --accent: #2f6f5e; --sel: #d7ebe3;
+    --shadow: 0 1px 2px rgba(43,42,38,.04), 0 4px 16px rgba(43,42,38,.05);
+    --mono: "SF Mono", "JetBrains Mono", ui-monospace, "Menlo", monospace;
+    --sans: -apple-system, "Hiragino Kaku Gothic ProN", "Hiragino Sans", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--ink); font-size: 15.5px; line-height: 1.85; -webkit-font-smoothing: antialiased; }
+  a { color: var(--link); text-underline-offset: 2px; }
+
+  /* top bar */
+  .bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 14px; padding: 12px 22px; background: rgba(251,250,247,.86); backdrop-filter: saturate(140%) blur(8px); border-bottom: 1px solid var(--line); }
+  .wordmark { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; letter-spacing: .01em; }
+  .wordmark .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+  .bar .spacer { flex: 1; }
+  .openapp { display: inline-flex; align-items: center; gap: 7px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; font-size: 13.5px; padding: 8px 15px; border-radius: 9px; box-shadow: var(--shadow); }
+  .openapp:hover { background: #27604f; }
+
+  /* layout */
+  main { max-width: 760px; margin: 0 auto; padding: 0 22px 120px; }
+  .hero { padding: 64px 0 40px; border-bottom: 1px solid var(--line); }
+  .hero h1 { font-size: 40px; line-height: 1.15; margin: 0 0 14px; letter-spacing: -.01em; }
+  .hero h1 .n { color: var(--accent); }
+  .hero .lead { font-size: 17px; color: var(--ink-soft); margin: 0 0 24px; max-width: 56ch; }
+  .hero .cta { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 11px 20px; border-radius: 11px; box-shadow: var(--shadow); }
+  .hero .cta:hover { background: #27604f; }
+  .hero .env { margin-top: 16px; font-size: 13px; color: var(--ink-faint); }
+  .hero .env code { font-family: var(--mono); color: var(--ink-soft); background: var(--line-soft); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+
+  /* sections — eyebrow uses the app's [[ ]] wiki-link motif */
+  section { padding: 40px 0; border-bottom: 1px solid var(--line); }
+  .eyebrow { font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: .04em; margin-bottom: 12px; }
+  .eyebrow::before { content: "[[ "; color: var(--ink-faint); }
+  .eyebrow::after { content: " ]]"; color: var(--ink-faint); }
+  h2 { font-size: 23px; margin: 0 0 14px; letter-spacing: -.01em; }
+  h3 { font-size: 16px; margin: 22px 0 6px; }
+  p { margin: 0 0 12px; }
+  .muted { color: var(--ink-soft); }
+
+  /* steps */
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 14px; }
+  .steps li { counter-increment: s; position: relative; padding: 14px 16px 14px 52px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+  .steps li::before { content: counter(s); position: absolute; left: 14px; top: 13px; width: 26px; height: 26px; display: grid; place-items: center; background: var(--link-bg); color: var(--accent); font-weight: 700; font-size: 13px; border-radius: 50%; }
+  .steps b { font-weight: 700; }
+
+  /* feature list */
+  .feat { display: grid; gap: 2px; margin: 4px 0 0; }
+  .feat .row { display: grid; grid-template-columns: 132px 1fr; gap: 16px; padding: 11px 2px; border-top: 1px solid var(--line-soft); }
+  .feat .row:first-child { border-top: none; }
+  .feat .k { font-weight: 700; font-size: 14.5px; }
+  .feat .v { color: var(--ink-soft); font-size: 14.5px; }
+  .feat .v code, .inline-code { font-family: var(--mono); font-size: 12.5px; background: var(--line-soft); color: var(--ink); padding: 1px 6px; border-radius: 5px; }
+
+  /* shortcuts */
+  .keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-top: 4px; }
+  .keys .kc { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  kbd { font-family: var(--mono); font-size: 12.5px; background: var(--bg); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 2px 8px; color: var(--ink); white-space: nowrap; }
+  .keys .desc { color: var(--ink-soft); font-size: 13.5px; }
+
+  /* changelog */
+  .log { margin-top: 8px; }
+  .rel { position: relative; padding: 0 0 26px 22px; border-left: 2px solid var(--line); }
+  .rel:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .rel::before { content: ""; position: absolute; left: -7px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--bg); }
+  .rel .ver { display: inline-flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .rel .tag { font-family: var(--mono); font-size: 12.5px; font-weight: 700; color: var(--accent); background: var(--link-bg); padding: 2px 9px; border-radius: 999px; }
+  .rel .date { font-family: var(--mono); font-size: 12px; color: var(--link-empty); background: #f6ece4; padding: 2px 8px; border-radius: 6px; }
+  .rel ul { margin: 4px 0 0; padding-left: 18px; }
+  .rel li { margin: 3px 0; color: var(--ink-soft); }
+  .rel li b { color: var(--ink); font-weight: 600; }
+
+  .note { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px; padding: 14px 16px; color: var(--ink-soft); font-size: 14px; }
+
+  footer { padding: 34px 0 0; color: var(--ink-faint); font-size: 13px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  footer a { font-weight: 600; }
+
+  @media (max-width: 560px) {
+    .hero h1 { font-size: 32px; }
+    .feat .row { grid-template-columns: 1fr; gap: 2px; }
+    .feat .k { font-size: 15px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <div class="wordmark"><span class="dot"></span>mdNotes</div>
+    <div class="spacer"></div>
+    <a class="openapp" href="index.html">アプリを開く →</a>
+  </div>
+
+  <main>
+    <header class="hero">
+      <h1>手元の Markdown を、<br>その場で読んで<span class="n">書く</span>。</h1>
+      <p class="lead">mdNotes は、ローカルフォルダの <code>.md</code> ファイルをブラウザだけで扱う単一HTMLアプリです。インストール不要・ファイル1つ。書いたものはあなたの端末から外に出ません。</p>
+      <a class="cta" href="index.html">アプリを開く →</a>
+      <div class="env">対応ブラウザ：Mac の <code>Chrome</code> / <code>Edge</code> / <code>Arc</code>（Safari・Firefox は非対応）</div>
+    </header>
+
+    <section id="about">
+      <div class="eyebrow">概要</div>
+      <h2>ローカルファースト、保存先はあなたのフォルダ</h2>
+      <p>フォルダを選ぶと、その中の Markdown を一覧・編集できます。クラウドにアップロードする仕組みはなく、読み書きはすべて端末内で完結します。複数人で同じHTMLにアクセスしても、各自が自分のフォルダを開いて作業する形なので、内容が混ざることはありません。</p>
+    </section>
+
+    <section id="start">
+      <div class="eyebrow">はじめかた</div>
+      <h2>3ステップで使える</h2>
+      <ol class="steps">
+        <li><b>アプリを開く。</b> 上の「アプリを開く」からどうぞ。初回だけブラウザの確認が出ます。</li>
+        <li><b>フォルダを選ぶ。</b> 左上の「⚙ 設定」→「フォルダを開く」で、<span class="inline-code">.md</span> の入ったフォルダを指定します。</li>
+        <li><b>読む／編集する。</b> カードをクリックして開き、左上の「読む／編集」を切り替えるだけ。変更は自動保存されます。</li>
+      </ol>
+    </section>
+
+    <section id="features">
+      <div class="eyebrow">機能</div>
+      <h2>できること</h2>
+      <div class="feat">
+        <div class="row"><div class="k">リンク</div><div class="v"><code>[[ノート名]]</code> でノート同士をつなぎ、バックリンクと2-hopリンクを表示します。存在しない先はオレンジ色で示します。</div></div>
+        <div class="row"><div class="k">目次</div><div class="v">見出しから目次を自動生成し、右側に固定表示。クリックでその見出しへ移動します。</div></div>
+        <div class="row"><div class="k">並列表示</div><div class="v">カードを <span class="inline-code">⌘</span> / <span class="inline-code">Ctrl</span> クリックで、最大3枚を横に並べて見比べられます。</div></div>
+        <div class="row"><div class="k">タグ</div><div class="v">本文中の <code>#タグ</code> で絞り込み（複数選択でAND）。よく使うタグは「タイプ」に指定して色を付けられます。</div></div>
+        <div class="row"><div class="k">画像</div><div class="v">貼り付け・🖼ボタン・ドラッグ&ドロップで取り込み。指定した添付フォルダに保存し、本文にリンクを挿入します。</div></div>
+        <div class="row"><div class="k">名前の変更</div><div class="v">タイトルの✏️、またはダブルクリックで改名。他ノートの <code>[[リンク]]</code> も自動で追従します。</div></div>
+        <div class="row"><div class="k">削除</div><div class="v">🗑から、確認のうえでノートを削除します。</div></div>
+        <div class="row"><div class="k">フォルダ記憶</div><div class="v">前回開いたフォルダを次回自動で再オープン。設定はフォルダ内のファイルに保存され、フォルダと一緒に持ち運べます。</div></div>
+      </div>
+    </section>
+
+    <section id="shortcuts">
+      <div class="eyebrow">ショートカット</div>
+      <h2>キー操作</h2>
+      <div class="keys">
+        <div class="kc"><kbd>⌘ E</kbd><span class="desc">読む ↔ 編集</span></div>
+        <div class="kc"><kbd>⌘ S</kbd><span class="desc">保存</span></div>
+        <div class="kc"><kbd>⌘ K</kbd><span class="desc">検索へ移動</span></div>
+        <div class="kc"><kbd>⌘ \</kbd><span class="desc">サイドバー開閉</span></div>
+      </div>
+    </section>
+
+    <section id="data">
+      <div class="eyebrow">データの保存場所</div>
+      <h2>どこに何が保存されるか</h2>
+      <p>ノート本文と画像は、あなたが選んだフォルダにそのまま保存されます。タイプタグの色や画像の保存先などの設定は、フォルダ内の <span class="inline-code">mdnotes.config.json</span> に書き出されます。フォルダを Dropbox や iCloud Drive 等で同期していれば、別の端末でも同じ設定が再現されます。</p>
+      <p class="muted">「前回のフォルダを自動で開く」情報だけは、各ブラウザの中（IndexedDB）に保存されます。これは仕様上、別端末へは引き継げないため、新しい端末では最初に一度だけフォルダを選び直してください。</p>
+    </section>
+
+    <section id="changelog">
+      <div class="eyebrow">更新履歴</div>
+      <h2>変更の記録</h2>
+      <div class="log">
+
+        <!-- 新しいリリースはこのブロックを複製して上に追加してください -->
+        <div class="rel">
+          <div class="ver"><span class="tag">v1.0</span><span class="date">2026-06-20</span></div>
+          <p class="muted" style="margin:0 0 6px">初回公開。</p>
+          <ul>
+            <li><b>基本機能</b>：ローカルフォルダの Markdown を読み書き、<code>[[ ]]</code> リンク・バックリンク・2-hop表示</li>
+            <li><b>表示</b>：見出しからの目次を右側に固定、最大3枚の並列表示、タイトルをカード内に表示</li>
+            <li><b>タグ</b>：複数タグでのAND絞り込み、タイプタグの色分け</li>
+            <li><b>画像の取り込み</b>：貼り付け／ファイル選択／ドラッグ&ドロップに対応し、添付フォルダへ自動保存</li>
+            <li><b>編集体験</b>：読む↔編集でスクロール位置を維持、入力時のカーソル位置ずれを解消、長いURLの折り返し</li>
+            <li><b>ファイル操作</b>：名前の変更（リンク自動追従）とノート削除</li>
+            <li><b>環境の継続</b>：前回フォルダの自動再オープン、設定をフォルダ内JSONに保存</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <footer>
+      <a href="index.html">← アプリを開く</a>
+      <span>mdNotes</span>
+    </footer>
+  </main>
+</body>
+</html>
